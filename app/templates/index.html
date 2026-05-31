@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+{% block title %}Buat Pembayaran{% endblock %}
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .pay-page {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 8px 0 24px;
+  }
+
+  /* ── Cards ── */
+  .pay-card {
+    background: #fff;
+    border: 1px solid #EBEBEB;
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .pay-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 2px;
+  }
+  .pay-card-sub {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-bottom: 20px;
+  }
+
+  /* ── Fields ── */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #6B7280;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .field input {
+    width: 100%;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #111;
+    background: #FAFAFA;
+    outline: none;
+    font-family: inherit;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field input:focus {
+    border-color: #3B82F6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+  }
+  .field input::placeholder { color: #C4C9D4; }
+
+  /* ── Field row ── */
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ── Divider ── */
+  .divider { height: 1px; background: #F3F4F6; margin: 18px 0; }
+
+  /* ── Section label ── */
+  .sec-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #6B7280;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* ── Method buttons ── */
+  .methods-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .m-btn {
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #6B7280;
+    cursor: pointer;
+    background: #FAFAFA;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .m-btn:hover { border-color: #93C5FD; color: #374151; background: #F0F7FF; }
+  .m-btn.active {
+    border: 1.5px solid #3B82F6;
+    background: #EFF6FF;
+    color: #1D4ED8;
+    font-weight: 600;
+  }
+  .m-btn .m-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background: #F3F4F6;
+    flex-shrink: 0;
+    transition: background .15s;
+  }
+  .m-btn.active .m-icon { background: #DBEAFE; }
+
+  /* ── Bank buttons ── */
+  .banks-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 7px;
+    margin-bottom: 16px;
+  }
+  .b-btn {
+    border: 1px solid #E5E7EB;
+    border-radius: 9px;
+    padding: 7px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6B7280;
+    cursor: pointer;
+    background: #FAFAFA;
+    text-align: center;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .b-btn:hover { border-color: #93C5FD; color: #374151; }
+  .b-btn.active {
+    border: 1.5px solid #3B82F6;
+    background: #EFF6FF;
+    color: #1D4ED8;
+  }
+
+  /* ── Pay button ── */
+  .pay-btn {
+    width: 100%;
+    background: #1D4ED8;
+    color: #fff;
+    border: none;
+    border-radius: 11px;
+    padding: 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background .15s, transform .1s;
+    font-family: inherit;
+    letter-spacing: .01em;
+  }
+  .pay-btn:hover { background: #1E40AF; }
+  .pay-btn:active { transform: scale(0.99); }
+
+  /* ── Status box ── */
+  .status-box {
+    display: none;
+    margin-top: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .status-box.blue { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+  .status-box.green { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+  .status-box.red { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+  .status-box.yellow { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+  .status-box a { color: inherit; font-weight: 600; }
+
+  /* ── Guide box ── */
+  .guide-box {
+    background: #F9FAFB;
+    border: 1px solid #F3F4F6;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: #4B5563;
+    line-height: 1.65;
+    min-height: 60px;
+  }
+
+  /* ── Right column ── */
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── Transaction list ── */
+  .txn-list { display: flex; flex-direction: column; gap: 6px; }
+  .txn-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: #F9FAFB;
+    border: 1px solid #F3F4F6;
+    border-radius: 10px;
+  }
+  .txn-name { font-size: 13px; font-weight: 600; color: #111; }
+  .txn-meta { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+  .txn-amount { font-size: 13px; font-weight: 600; color: #111; text-align: right; }
+  .badge {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-top: 3px;
+  }
+  .badge-success { background: #DCFCE7; color: #166534; }
+  .badge-pending { background: #FEF9C3; color: #854D0E; }
+  .badge-failed  { background: #FEE2E2; color: #991B1B; }
+  .badge-cancel  { background: #F3F4F6; color: #6B7280; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 28px 0;
+    color: #D1D5DB;
+    font-size: 12.5px;
+  }
+  .empty-state svg { margin: 0 auto 8px; display: block; }
+</style>
+
+<div class="pay-page">
+
+  <!-- LEFT: Form -->
+  <div class="pay-card">
+    <div class="pay-card-title">Buat Pembayaran</div>
+    <div class="pay-card-sub">Isi detail transaksi dan pilih metode</div>
+
+    <div class="field">
+      <label>Nama Lengkap</label>
+      <input type="text" id="name" placeholder="Budi Santoso">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="budi@email.com">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Nomor HP</label>
+        <input type="text" id="phone" placeholder="08123456789">
+      </div>
+      <div class="field">
+        <label>Jumlah (Rp)</label>
+        <input type="number" id="amount" placeholder="150000">
+      </div>
+    </div>
+    <div class="field">
+      <label>Keterangan</label>
+      <input type="text" id="description" placeholder="Pembayaran produk A">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sec-label">Metode Pembayaran</div>
+    <div class="methods-grid">
+      <button class="m-btn active" data-method="snap" onclick="selectMethod('snap')">
+        <span class="m-icon">🧾</span> Semua (Snap)
+      </button>
+      <button class="m-btn" data-method="gopay" onclick="selectMethod('gopay')">
+        <span class="m-icon">📱</span> GoPay
+      </button>
+      <button class="m-btn" data-method="shopeepay" onclick="selectMethod('shopeepay')">
+        <span class="m-icon">🛍️</span> ShopeePay
+      </button>
+      <button class="m-btn" data-method="qris" onclick="selectMethod('qris')">
+        <span class="m-icon">⬛</span> QRIS
+      </button>
+      <button class="m-btn" data-method="va" onclick="selectMethod('va')">
+        <span class="m-icon">🏦</span> Virtual Account
+      </button>
+      <button class="m-btn" data-method="alfamart" onclick="selectMethod('alfamart')">
+        <span class="m-icon">🏪</span> Alfamart
+      </button>
+      <button class="m-btn" data-method="indomaret" onclick="selectMethod('indomaret')">
+        <span class="m-icon">🏪</span> Indomaret
+      </button>
+    </div>
+
+    <!-- Bank Section (muncul kalau VA dipilih) -->
+    <div id="bankSection" style="display:none">
+      <div class="sec-label">Pilih Bank</div>
+      <div class="banks-grid">
+        <button class="b-btn active" data-bank="bca" onclick="selectBank('bca')">BCA</button>
+        <button class="b-btn" data-bank="bni" onclick="selectBank('bni')">BNI</button>
+        <button class="b-btn" data-bank="bri" onclick="selectBank('bri')">BRI</button>
+        <button class="b-btn" data-bank="mandiri" onclick="selectBank('mandiri')">Mandiri</button>
+        <button class="b-btn" data-bank="permata" onclick="selectBank('permata')">Permata</button>
+      </div>
+    </div>
+
+    <button class="pay-btn" onclick="submitPayment()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2V7a5 5 0 0 0-5-5zm0 2a3 3 0 0 1 3 3v3H9V7a3 3 0 0 1 3-3zm0 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
+      Bayar Sekarang
+    </button>
+
+    <div id="statusBox" class="status-box"></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-col">
+
+    <!-- Panduan -->
+    <div class="pay-card">
+      <div class="pay-card-title">Panduan Simulator</div>
+      <div class="pay-card-sub" id="guideMethodName">Snap — semua metode</div>
+      <div class="guide-box" id="guideBox">
+        Pilih metode pembayaran untuk melihat cara pengujiannya.
+      </div>
+    </div>
+
+    <!-- Transaksi Terbaru -->
+    <div class="pay-card" style="flex:1">
+      <div class="pay-card-title" style="margin-bottom:14px">Transaksi Terbaru</div>
+      <div id="recentList">
+        <div class="empty-state">
+          <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
+          </svg>
+          Belum ada transaksi
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let selectedMethod = 'snap';
+let selectedBank = 'bca';
+
+const guides = {
+  snap:      { name: 'Snap — Semua Metode',  text: 'Popup akan muncul dengan semua pilihan metode. Pilih metode yang diinginkan lalu ikuti instruksi di dalam popup Midtrans.' },
+  gopay:     { name: 'GoPay',                text: 'Setelah klik Bayar, link simulator akan muncul. Klik link tersebut lalu klik Pay di halaman simulator untuk menyetujui pembayaran.' },
+  shopeepay: { name: 'ShopeePay',            text: 'Setelah klik Bayar, link simulator muncul. Klik link → klik Pay di halaman simulator.' },
+  qris:      { name: 'QRIS',                 text: 'Link simulator akan muncul. Klik link → klik Scan QR di simulator, lalu klik Pay untuk menyelesaikan.' },
+  va:        { name: 'Virtual Account',      text: 'Nomor VA akan muncul beserta link simulator bank. Klik link → masukkan nomor VA → klik Pay.' },
+  alfamart:  { name: 'Alfamart',             text: 'Kode pembayaran akan muncul. Klik link simulator → masukkan kode → klik Pay.' },
+  indomaret: { name: 'Indomaret',            text: 'Kode pembayaran akan muncul. Klik link simulator → masukkan kode → klik Pay.' },
+};
+
+function selectMethod(method) {
+  selectedMethod = method;
+  document.querySelectorAll('.m-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`[data-method="${method}"]`).classList.add('active');
+  document.getElementById('bankSection').style.display = method === 'va' ? 'block' : 'none';
+  const g = guides[method];
+  document.getElementById('guideMethodName').textContent = g.name;
+  document.getElementById('guideBox').textContent = g.text;
+  document.getElementById('statusBox').style.display = 'none';
+}
+
+function selectBank(bank) {
+  selectedBank = bank;
+  document.querySelectorAll('.b-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`[data-bank="${bank}"]`).classList.add('active');
+}
+
+function showStatus(type, html) {
+  const box = document.getElementById('statusBox');
+  box.className = `status-box ${type}`;
+  box.style.display = 'block';
+  box.innerHTML = html;
+}
+
+function getCustomer() {
+  return {
+    name:  document.getElementById('name').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+  };
+}
+
+async function submitPayment() {
+  const name   = document.getElementById('name').value;
+  const email  = document.getElementById('email').value;
+  const amount = document.getElementById('amount').value;
+
+  if (!name || !email || !amount) {
+    showStatus('red', '⚠️ Lengkapi <b>nama</b>, <b>email</b>, dan <b>jumlah</b> terlebih dahulu.');
+    return;
+  }
+
+  showStatus('blue', '⏳ Memproses pembayaran...');
+
+  const body = { amount: parseInt(amount), customer: getCustomer() };
+  if (selectedMethod === 'va') body.bank = selectedBank;
+
+  const endpoints = {
+    snap:      '/api/payment/create',
+    gopay:     '/api/payment/gopay',
+    shopeepay: '/api/payment/shopeepay',
+    qris:      '/api/payment/qris',
+    va:        '/api/payment/va',
+    alfamart:  '/api/payment/alfamart',
+    indomaret: '/api/payment/indomaret',
+  };
+
+  try {
+    const res  = await fetch(endpoints[selectedMethod], {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    handleResponse(data);
+    loadRecent();
+  } catch (err) {
+    showStatus('red', '❌ Koneksi gagal. Silakan coba lagi.');
+  }
+}
+
+function handleResponse(data) {
+  if (selectedMethod === 'snap' && data.snap_token) {
+    showStatus('blue', '🔄 Membuka halaman pembayaran...');
+    snap.pay(data.snap_token, {
+      onSuccess: (r) => { showStatus('green', `✅ Pembayaran berhasil! Order: <b>${r.order_id}</b>`); loadRecent(); },
+      onPending: (r) => { showStatus('yellow', `⏳ Menunggu pembayaran. Order: <b>${r.order_id}</b>`); },
+      onError:   ()  => { showStatus('red', '❌ Pembayaran gagal.'); },
+    });
+    return;
+  }
+
+  if (data.simulator_url) {
+    const labels = {
+      gopay:     { label: 'GoPay',                     info: 'Klik <b>Pay</b> di simulator' },
+      shopeepay: { label: 'ShopeePay',                 info: 'Klik <b>Pay</b> di simulator' },
+      qris:      { label: 'QRIS',                      info: 'Klik <b>Scan QR</b> lalu <b>Pay</b>' },
+      va:        { label: `VA ${(data.bank||'').toUpperCase()}`, info: `Nomor VA: <b>${data.va_number}</b>` },
+      alfamart:  { label: 'Alfamart',                  info: `Kode: <b>${data.payment_code}</b>` },
+      indomaret: { label: 'Indomaret',                 info: `Kode: <b>${data.payment_code}</b>` },
+    };
+    const l = labels[selectedMethod] || { label: selectedMethod, info: '' };
+    showStatus('green', `
+      ✅ <b>${l.label}</b> berhasil dibuat!<br>
+      <span style="opacity:.85">Order: <b>${data.order_id}</b> &nbsp;·&nbsp; ${l.info}</span><br>
+      <a href="${data.simulator_url}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-weight:600;font-size:12px">
+        🔗 Buka Simulator Midtrans →
+      </a>
+    `);
+    return;
+  }
+
+  showStatus('red', data.error || '❌ Terjadi kesalahan.');
+}
+
+async function loadRecent() {
+  try {
+    const res  = await fetch('/api/payment/list');
+    const data = await res.json();
+    const el   = document.getElementById('recentList');
+
+    if (!data.length) {
+      el.innerHTML = `
+        <div class="empty-state">
+          <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
+          </svg>
+          Belum ada transaksi
+        </div>`;
+      return;
+    }
+
+    const badgeClass = { success:'badge-success', pending:'badge-pending', failed:'badge-failed', cancel:'badge-cancel' };
+
+    el.innerHTML = `<div class="txn-list">` + data.slice(0, 5).map(t => `
+      <div class="txn-item">
+        <div>
+          <div class="txn-name">${t.customer_name}</div>
+          <div class="txn-meta">${t.order_id} · ${t.payment_method || '-'}</div>
+        </div>
+        <div class="txn-amount">
+          Rp ${t.amount.toLocaleString('id-ID')}
+          <div><span class="badge ${badgeClass[t.status] || 'badge-cancel'}">${t.status}</span></div>
+        </div>
+      </div>`).join('') + `</div>`;
+
+  } catch (e) {
+    document.getElementById('recentList').innerHTML = '<div class="empty-state">Gagal memuat data</div>';
+  }
+}
+
+// Init
+selectMethod('snap');
+loadRecent();
+</script>
+
+{% endblock %}

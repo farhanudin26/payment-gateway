@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Transaksi{% endblock %}
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold text-gray-800">Riwayat Transaksi</h2>
+        <input type="text" id="search" placeholder="Cari order ID / nama..."
+            class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 w-56">
+    </div>
+    <div id="tableWrap" class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 border-b">
+                    <th class="pb-2 font-medium">Order ID</th>
+                    <th class="pb-2 font-medium">Nama</th>
+                    <th class="pb-2 font-medium">Jumlah</th>
+                    <th class="pb-2 font-medium">Status</th>
+                    <th class="pb-2 font-medium">Tanggal</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y">
+                <tr><td colspan="5" class="py-8 text-center text-gray-400">Memuat...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function statusColor(s) {
+    return {
+        'success': 'bg-green-100 text-green-700',
+        'pending': 'bg-yellow-100 text-yellow-700',
+        'failed':  'bg-red-100 text-red-700',
+        'cancel':  'bg-gray-100 text-gray-600',
+    }[s] || 'bg-gray-100 text-gray-600';
+}
+
+let allData = [];
+
+async function load() {
+    const res = await fetch('/api/payment/list');
+    allData = await res.json();
+    render(allData);
+}
+
+function render(data) {
+    const tbody = document.getElementById('tableBody');
+    if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-400">Belum ada transaksi</td></tr>';
+        return;
+    }
+    tbody.innerHTML = data.map(t => `
+        <tr class="hover:bg-gray-50">
+            <td class="py-3 font-mono text-xs text-gray-500">${t.order_id}</td>
+            <td class="py-3">${t.customer_name}</td>
+            <td class="py-3 font-medium">Rp ${t.amount.toLocaleString('id-ID')}</td>
+            <td class="py-3">
+                <span class="px-2 py-0.5 rounded-full text-xs ${statusColor(t.status)}">${t.status}</span>
+            </td>
+            <td class="py-3 text-gray-400 text-xs">${new Date(t.created_at).toLocaleString('id-ID')}</td>
+        </tr>
+    `).join('');
+}
+
+document.getElementById('search').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    render(allData.filter(t =>
+        t.order_id.toLowerCase().includes(q) ||
+        t.customer_name.toLowerCase().includes(q)
+    ));
+});
+
+load();
+</script>
+{% endblock %}
